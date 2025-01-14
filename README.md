@@ -23,7 +23,7 @@ Once pip is installed, you can install the required packages:
 pip install beautifulsoup4 selenium
 ```
 
-3. ChromeDriver
+3. ChromeDriver:
 This repository includes the compatible ChromeDriver version for Google Chrome (v114). No additional setup is required for ChromeDriver. Simply ensure that the `chrome/chromedriver.exe` is in the same directory as the script.
 
 If you need a different version of ChromeDriver, you can download it from the official website:
@@ -31,14 +31,10 @@ If you need a different version of ChromeDriver, you can download it from the of
 
 Make sure the version of ChromeDriver matches the version of Chrome installed on your system.
 
-4. Google Chrome
-
+4. Google Chrome:
 For this script to work, you need a version of Google Chrome that is compatible with the included ChromeDriver. 
-
 If you want to use the included ChromeDriver (v114), please ensure you install Google Chrome v114. You can download it from the following link:
-
 [Download Google Chrome v114](https://www.filepuma.com/download/google_chrome_64bit_114.0.5735.199-35569/)
-
 Make sure to match the version of Google Chrome with the version of ChromeDriver provided in the repository for optimal compatibility.
 
 ## Usage
