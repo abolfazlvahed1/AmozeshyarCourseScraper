@@ -26,8 +26,8 @@ if not os.path.exists(directory):
 
 def start_after_login():
     try:
-        time.sleep(10)
-        # Step 1: Navigate to the "جستجوي كلاس درسهای ارائه شده" page
+        time.sleep(5)
+        # Navigate to the "جستجوي كلاس درسهای ارائه شده" page
         WebDriverWait(driver, 10).until(
             EC.frame_to_be_available_and_switch_to_it((By.ID, "menuFrame"))
         )
@@ -47,20 +47,20 @@ def start_after_login():
         row_count_dropdown = WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.NAME, "parameter(rowCount)"))
         )
-
-        # Step 3: Set the number of rows to 100
+        time.sleep(5)
+        # Set the number of rows to 100
         select = Select(row_count_dropdown)
         select.select_by_value("100")
         print("Set the number of search results to 100.")
 
-        # Step 4: Click the search button
+        # Click the search button
         search_button = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable((By.ID, "submitBtn"))
         )
         search_button.click()
         print("Search button clicked. Waiting for results...")
 
-        # Step 5: Parse the page and extract total records using BeautifulSoup
+        # Parse the page and extract total records using BeautifulSoup
         page_html = driver.page_source
         soup = BeautifulSoup(page_html, 'html.parser')
 
@@ -82,13 +82,26 @@ def start_after_login():
 
         while current_start < total_records:
             try:
-                time.sleep(10)
-                # Save the current page HTML
-                page_html = driver.page_source
-                file_name = f"{directory}//offered_courses_page_{page_number}.html"
-                with open(file_name, "w", encoding="utf-8") as file:
-                    file.write(page_html)
-                print(f"Saved HTML for page {page_number} as {file_name}")
+                time.sleep(5)
+                # Parse HTML content
+                soup = BeautifulSoup( driver.page_source, 'html.parser')
+                # Find the specific table
+                table_container = soup.find('div', {
+                    'id': 'tableContainer',
+                    'class': 'datagrid'
+                })
+                
+                if table_container:
+                    # Get the table HTML
+                    file_name = f"{directory}//offered_courses_page_{page_number}.html"
+                    with open(file_name, "w", encoding="utf-8") as file:
+                        file.write(str(table_container))
+                    print(f"Saved extracted table for page {page_number} as {file_name}")
+                    
+                else:
+                    print(f"No table container found in {page_number}")
+                
+                
 
                 # Calculate the next range start
                 current_start = page_number * records_per_page
@@ -137,39 +150,9 @@ def start_after_login():
         start_after_login()  # Restart the process
 
 try:
-    # Step 1: Navigate to the login page
+    # Navigate to the login page
     driver.get("https://eserv.iau.ir/EServices/Pages/acmstd/loginPage.jsp")
-    time.sleep(5)
-
-    # Step 2: Perform login
-    username_field = driver.find_element(By.ID, "user")
-    password_field = driver.find_element(By.ID, "pass")
-    captcha_field = driver.find_element(By.NAME, "jcaptcha")
-    submit_button = driver.find_element(By.NAME, "B1")
-
-    # Enter credentials
-    username_field.send_keys("username")  # Replace with your username
-    password_field.send_keys("password")  # Replace with your password
-    captcha_value = input("Enter the CAPTCHA value displayed in the browser: ")  # Manually solve CAPTCHA
-    captcha_field.send_keys(captcha_value)
-    submit_button.click()
-
-    # Step 3: Wait for the confirmation button and click it
-    confirm_button = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.ID, "dijit_form_Button_0_label"))
-    )
-    confirm_button.click()
-
-    # Step 4: Wait for OTP input and submission
-    otp_input = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.ID, "OTP"))
-    )
-    otp_value = input("Enter the OTP received on your phone: ")
-    otp_input.send_keys(otp_value)
-    submit_otp_button = driver.find_element(By.CSS_SELECTOR, 'input[name="B1"][value^="تایید"]')
-    submit_otp_button.click()
-
-    print("Login successful. Starting process after login.")
+    input("Please login at Amozeshyar portal in the opened Chrome window after that press Enter to continue...")
     start_after_login()
 
 except Exception as e:

@@ -42,18 +42,13 @@ If you want to use the included ChromeDriver (v114), please ensure you install G
 Make sure to match the version of Google Chrome with the version of ChromeDriver provided in the repository for optimal compatibility.
 
 ## Usage
-1. Update the login credentials (username, password) in the script:
-```python
-# Enter credentials
-    username_field.send_keys("username")  # Replace with your username
-    password_field.send_keys("password")  # Replace with your password
-```
-2. Run the script:
+Run the script:
 ```sh
 python /path/to/script.py
 ```
 
-During the process, Google Chrome will open, and you'll be asked to enter the CAPTCHA. After solving it, you'll be prompted for the IGAP code. Once completed, the script will download all the offered course data.
+During the process, Google Chrome will open, you must login in your Amozeshyar portal and after that press Enter in script. Once press Enter, the script will download all the offered course data.
+it may take some minutes so be patients
 
 ## Notes
 - Ensure you manually solve the CAPTCHA during the login process.
