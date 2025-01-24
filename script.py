@@ -20,8 +20,8 @@ directory = "html-pages"
 
 # group code to filter chagne it to you group code you want to search
 # this group code is for tehran markaz computer group, change it to yours
-groupCode=["2110130","2110199","2114199","2157719","2123818","2125299","2110153","2157799","2115799","2111399","2155999","2110143","2123845","2111510180","2123819","2123899"]
-
+groupCode=["2110199"]
+present_type=["586","7000654104","6991883788"]
 # Create the directory if it does not exist
 if not os.path.exists(directory):
     os.makedirs(directory)
@@ -49,6 +49,8 @@ class SearchParameters:
     
     def update_group_code(self, new_value):
         self.group_code=new_value
+    def update_present_type_ref(self, new_value):
+        self.present_type_ref=new_value
 
 def apply_search_parameters(driver, params):
     """Apply search parameters to the form"""
@@ -126,110 +128,113 @@ def start_after_login(search_params=None):
         print("Clicked on 'جستجوي كلاس درسهای ارائه شده'.")
 
         for code in groupCode:
-            # Apply search parameters if provided
             search_params.update_group_code(code)
-            if search_params:
-                if not apply_search_parameters(driver, search_params):
-                    raise Exception("Failed to apply search parameters")
-                
-            # Wait for the next page to load (dropdown for row count)
-            row_count_dropdown = WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.NAME, "parameter(rowCount)"))
-            )
-            time.sleep(5)
-            # Set the number of rows to 100
-            select = Select(row_count_dropdown)
-            select.select_by_value("100")
-            print("Set the number of search results to 100.")
+            for present in present_type:
+                # Apply search parameters if provided
+                search_params.update_present_type_ref(present)
 
-            # Click the search button
-            search_button = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.ID, "submitBtn"))
-            )
-            search_button.click()
-            print("Search button clicked. Waiting for results...")
-
-            # Parse the page and extract total records using BeautifulSoup
-            page_html = driver.page_source
-            soup = BeautifulSoup(page_html, 'html.parser')
-
-            # Find the total records count
-            total_records_element = soup.find('span', {'id': 'totalSearchCount'})
-            if total_records_element:
-                total_records = int(total_records_element.text.strip())
-                print(f"Total records: {total_records}")
-            else:
-                print("Could not find total records. Restarting...")
-                raise Exception("Total records not found.")
-
-            # Initialize current page variables
-            current_start = 0
-            records_per_page = 100
-            page_number = 1
-            retry_count = 0
-            max_retries = 3
-
-            while current_start < total_records:
-                try:
-                    time.sleep(2)
-                    # Parse HTML content
-                    soup = BeautifulSoup( driver.page_source, 'html.parser')
-                    # Find the specific table
-                    table_container = soup.find('div', {
-                        'id': 'tableContainer',
-                        'class': 'datagrid'
-                    })
+                if search_params:
+                    if not apply_search_parameters(driver, search_params):
+                        raise Exception("Failed to apply search parameters")
                     
-                    if table_container:
-                        # Get the table HTML
-                        file_name = f"{directory}//{code}_offered_courses_page_{page_number}.html"
-                        with open(file_name, "w", encoding="utf-8") as file:
-                            file.write(str(table_container))
-                        print(f"Saved extracted table for page {page_number} as {file_name}")
+                # Wait for the next page to load (dropdown for row count)
+                row_count_dropdown = WebDriverWait(driver, 10).until(
+                    EC.presence_of_element_located((By.NAME, "parameter(rowCount)"))
+                )
+                time.sleep(5)
+                # Set the number of rows to 100
+                select = Select(row_count_dropdown)
+                select.select_by_value("100")
+                print("Set the number of search results to 100.")
+
+                # Click the search button
+                search_button = WebDriverWait(driver, 10).until(
+                    EC.element_to_be_clickable((By.ID, "submitBtn"))
+                )
+                search_button.click()
+                print("Search button clicked. Waiting for results...")
+
+                # Parse the page and extract total records using BeautifulSoup
+                page_html = driver.page_source
+                soup = BeautifulSoup(page_html, 'html.parser')
+
+                # Find the total records count
+                total_records_element = soup.find('span', {'id': 'totalSearchCount'})
+                if total_records_element:
+                    total_records = int(total_records_element.text.strip())
+                    print(f"Total records: {total_records}")
+                else:
+                    print("Could not find total records. Restarting...")
+                    raise Exception("Total records not found.")
+
+                # Initialize current page variables
+                current_start = 0
+                records_per_page = 100
+                page_number = 1
+                retry_count = 0
+                max_retries = 3
+
+                while current_start < total_records:
+                    try:
+                        time.sleep(2)
+                        # Parse HTML content
+                        soup = BeautifulSoup( driver.page_source, 'html.parser')
+                        # Find the specific table
+                        table_container = soup.find('div', {
+                            'id': 'tableContainer',
+                            'class': 'datagrid'
+                        })
                         
-                    else:
-                        print(f"No table container found in {page_number}")
-                    
-                    
+                        if table_container:
+                            # Get the table HTML
+                            file_name = f"{directory}//{code}_{present}_offered_courses_page_{page_number}.html"
+                            with open(file_name, "w", encoding="utf-8") as file:
+                                file.write(str(table_container))
+                            print(f"Saved extracted table for page {page_number} as {file_name}")
+                            
+                        else:
+                            print(f"No table container found in {page_number}")
+                        
+                        
 
-                    # Calculate the next range start
-                    current_start = page_number * records_per_page
-                    print(f"Processed records up to: {current_start}")
+                        # Calculate the next range start
+                        current_start = page_number * records_per_page
+                        print(f"Processed records up to: {current_start}")
 
-                    # Check if it's the final page
-                    if current_start >= total_records:
-                        print("Reached the final page.")
-                        break
+                        # Check if it's the final page
+                        if current_start >= total_records:
+                            print("Reached the final page.")
+                            break
 
-                    # Click on the "Next" button
-                    next_button = WebDriverWait(driver, 10).until(
-                        EC.element_to_be_clickable((By.ID, "nextPage"))
-                    )
-                    next_button.click()
-                    print("Clicked 'Next Page' button. Loading next page...")
+                        # Click on the "Next" button
+                        next_button = WebDriverWait(driver, 10).until(
+                            EC.element_to_be_clickable((By.ID, "nextPage"))
+                        )
+                        next_button.click()
+                        print("Clicked 'Next Page' button. Loading next page...")
 
-                    # Wait for the next page to load
-                    WebDriverWait(driver, 10).until(
-                        EC.presence_of_element_located((By.XPATH, "//td[contains(text(),'نتايج جستجو')]"))
-                    )
-                    page_number += 1
-                    retry_count = 0  # Reset retry count after a successful iteration
-
-                except Exception as e:
-                    print(f"An error occurred on page {page_number}: {e}")
-                    retry_count += 1
-
-                    if retry_count <= max_retries:
-                        print(f"Retrying page {page_number} ({retry_count}/{max_retries})...")
-                        driver.refresh()  # Refresh the page
+                        # Wait for the next page to load
                         WebDriverWait(driver, 10).until(
                             EC.presence_of_element_located((By.XPATH, "//td[contains(text(),'نتايج جستجو')]"))
                         )
-                        continue  # Retry the current iteration
-                    else:
-                        print(f"Max retries reached for page {page_number}. Moving to the next page.")
-                        retry_count = 0
-                        break
+                        page_number += 1
+                        retry_count = 0  # Reset retry count after a successful iteration
+
+                    except Exception as e:
+                        print(f"An error occurred on page {page_number}: {e}")
+                        retry_count += 1
+
+                        if retry_count <= max_retries:
+                            print(f"Retrying page {page_number} ({retry_count}/{max_retries})...")
+                            driver.refresh()  # Refresh the page
+                            WebDriverWait(driver, 10).until(
+                                EC.presence_of_element_located((By.XPATH, "//td[contains(text(),'نتايج جستجو')]"))
+                            )
+                            continue  # Retry the current iteration
+                        else:
+                            print(f"Max retries reached for page {page_number}. Moving to the next page.")
+                            retry_count = 0
+                            break
 
     except Exception as e:
         print(f"An error occurred: {e}")
